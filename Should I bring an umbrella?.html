@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<header>
+<style>
+    .button {
+        border-color: firebrick;
+        padding: 20px;
+        color: rgba(255, 0, 0, 0.575);
+        font-size: 15px;
+        transition-duration: 0.5s;
+        position: relative;
+        left: 75px;
+    }
+    button:hover{
+        background-color:rgb(45, 189, 236);
+    }
+    
+    h1 {
+        font: "times new roman";
+        
+        border: 10px solid deepskyblue;   
+        width: 280px;
+    }
+    .green {
+        background-color:slategray;  
+        width: 300px;
+        text-align: center;
+    }
+    .ghost {
+        display: none;
+    }
+    #container {
+        width: 300px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+ 
+    .circle {
+        border-radius: 50%;
+        background-color: deepskyblue;
+        width: 150px;
+        height: 150px;
+        position: absolute;
+        opacity: 0;
+        animation: scaleIn 4s infinite cubic-bezier(.36, .11, .89, .32);
+    }
+    .circle:hover{
+        background-color:fuchsia;
+    }
+    .item {
+        z-index: 100;
+        padding: 5px;
+        text-align: center;
+    }
+ 
+    .item img {
+        width: 150px;
+    }
+    @keyframes scaleIn {
+        from {
+            transform: scale(.5, .5);
+            opacity: .75;
+        }
+        to {
+            transform: scale(2.5, 2.5);
+            opacity: 0;
+        }
+    }
+   .center {
+       text-align: center;
+   }
+   .slider {
+    position: relative;
+        left: 25%;
+   }
+   .storage {
+       width:300px;
+   }
+</style>
+</header>
+<body>
+
+    <h1 class="center">SHOULD I BRING AN UMBRELLA?</h1>
+
+    <p id="button1"><button class="button" onclick="getWeather()">Find out here!</button></p>
+    <h3 id="location" class="green"></h3>
+
+    <div id='rain' class="ghost">
+        <div id="outerContainer">
+            <div id="container">
+            <div class="item">
+                BRING IT!<br>YOU'RE IN DANGER!
+            </div>
+            <div class="circle" style="animation-delay: 0s"></div>
+            <div class="circle" style="animation-delay: 1s"></div>
+            <div class="circle" style="animation-delay: 2s"></div>
+            <div class="circle" style="animation-delay: 3s"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    //these are the weather code arrays
+    let wLight = [200,210,230,300,310,500,520,];
+    let wMed = [201,211,221,231,301,311,313,321,501,521,531,600,601,611,612,615,616,620,621];
+    let wHeavy = [202,212,232,302,312,314,502,503,504,511,522,602,616,622];
+
+
+    function getWeather() {
+        navigator.geolocation.getCurrentPosition(success, error);
+        var location = document.getElementById("location");
+        
+        location.innerHTML = "Locating...";
+        
+        
+        var apiKey = '9aa99408c67a7f32026a8053c959b2a3';
+        function success(position) {
+            var url = 'https://api.openweathermap.org/data/2.5/forecast?lat='+position.coords.latitude+'&lon='+position.coords.longitude+'&cnt=3&units=metric&appid=9aa99408c67a7f32026a8053c959b2a3';
+            // this is the place with the data about what object is being returned https://openweathermap.org/forecast5#geo5
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    //still working on this stuff in here...API key not working yet 
+                    
+                    var arr = [];
+                    for (var i = 0; i<data.list.length; i++){
+                        arr.push([data.list[i].weather[0].id ,data.list[i].pop]);
+                    }
+                    //document.getElementById("risk").innerHTML = arr;
+                    outputter(isRain(arr));    
+                })
+            }
+                
+        function outputter(thing) {
+            if (thing==true) {
+                document.getElementById("rain").classList.remove("ghost");
+                document.getElementById("button1").classList.add("ghost");
+                document.getElementById("location").classList.add("ghost");
+                document.getElementById("riskIn").classList.add("ghost");
+                document.getElementById("abc").classList.add("ghost");
+                document.getElementById("risk").innerHTML = "Don't forget, you were " + document.getElementById("vol").value +"% risky!";
+            } else {    
+                document.getElementById("button1").classList.add("ghost");
+                document.getElementById("location").classList.add("ghost");
+                document.getElementById("riskIn").classList.add("ghost");
+                document.getElementById("abc").classList.add("ghost");
+                document.getElementById("risk").innerHTML = "YOU'RE GOOD!<br>Don't forget, you were " + document.getElementById("vol").value +"% risky!";
+                
+            }
+        }           
+        
+        function isRain(wArr){
+            let challenge = document.getElementById("vol").value;
+            //let chall = 0;
+            let chall = (challenge/200)+0.5;
+            for (var j=0; j < wArr.length; j++){
+                if (wArr[j][1] >= chall|checkWeather(challenge,wArr[j][0])) {
+                    return true;
+                }
+            }
+            return false
+            
+        }
+        function error() {
+            location.innerHTML = "Unable to get your location...WOMP WOMP";
+            document.getElementById("button1").classList.add("ghost");
+            document.getElementById("riskIn").classList.add("ghost");
+            document.getElementById("abc").classList.add("ghost");
+            document.getElementById("risk").classList.add("ghost");
+        }
+    } 
+    function checkWeather(riskChance, wCode) {
+        if (riskChance==100) {
+            return (wHeavy.includes(wCode));
+        } else if (riskChance>=20) {
+            return (wHeavy.includes(wCode)|wMed.includes(wCode));
+        } else  {
+            return (wHeavy.includes(wCode)|wMed.includes(wCode)|wLight.includes(wCode));
+        }
+    }
+  
+
+</script>
+<div class="storage">
+<div class="center" id="risk">How risky do you want to be?</div>
+<form id="riskIn">
+  
+  <input class="slider" type="range" id="vol" name="vol" min="0" max="100" step="20" value="0" oninput=show()>
+  
+</form>
+<div id="abc" class="center">0% risky</div>
+</div>
+<script>
+function show() {
+    let v = document.getElementById("vol").value;
+    document.getElementById("abc").innerHTML =v+"% risky";
+}
+
+</script>
+
+</body>
+
+</html>
